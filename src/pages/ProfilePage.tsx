@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useEffect, useState } from "react";
 import api from "@/api/axios";
-import { useAuthStore } from "@/store/authStore";
+import toast from "react-hot-toast";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Typography } from "@/components/ui/typography";
 
 import logo from "../assets/images/logo.svg";
-import avatarImg from "../assets/images/avatar.png";
 import iconExplore from "../assets/images/icon-explore.svg";
 import iconMyProjects from "../assets/images/icon-myprojects.svg";
 import iconGamepad from "../assets/images/icon-gamepad.svg";
@@ -19,56 +19,36 @@ import iconEdit from "../assets/images/icon-edit.svg";
 import iconLock from "../assets/images/icon-lock.svg";
 import iconLogout from "../assets/images/icon-logout.svg";
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  created_at: string;
-};
-
 export default function ProfilePage() {
   const navigate = useNavigate();
   const logoutAction = useAuthStore((state) => state.logout);
 
-  const [user, setUser] = useState<User | null>(null);
+  const [gamesCreated, setGamesCreated] = useState(0);
+
+  const user = useAuthStore((state) => state.user);
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchGamesCreated = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/api/auth/me");
-        setUser(response.data.data);
-      } catch (err) {
-        setError("Failed to fetch user profile.");
-        console.error(err);
+        const response = await api.get("/api/auth/me/game");
+        setGamesCreated(response.data.meta.total);
+      } catch (error) {
+        console.error("Failed to fetch games created:", error);
+        toast.error("Failed to fetch games created.");
       } finally {
         setLoading(false);
       }
     };
-    fetchUserProfile();
+    fetchGamesCreated();
   }, []);
 
   const handleLogout = () => {
     logoutAction();
     navigate("/login");
   };
-
-  if (loading)
-    return (
-      <div className="w-full h-screen flex justify-center items-center">
-        <Typography variant="h3">Loading Profile...</Typography>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="w-full h-screen flex justify-center items-center">
-        <Typography variant="h3" className="text-destructive">
-          {error}
-        </Typography>
-      </div>
-    );
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans">
@@ -93,13 +73,16 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-9 h-9">
-              <AvatarImage src={avatarImg} alt="User Avatar" />
+              <AvatarImage
+                src={user?.profile_picture ?? undefined}
+                alt="User Avatar"
+              />
               <AvatarFallback>
-                {user?.name?.charAt(0).toUpperCase() || "U"}
+                {user?.username?.charAt(0)?.toUpperCase() ?? "U"}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs font-medium text-slate-900">
-              {user?.name || "Username"}
+            <span className="text-sm font-medium text-slate-900">
+              {user?.username || "Username"}
             </span>
           </div>
         </div>
@@ -107,35 +90,27 @@ export default function ProfilePage() {
 
       {user && (
         <main className="max-w-4xl mx-auto py-10 px-6">
-          <div className="border-b pb-4 mb-6">
+          <div className="pb-2 mb-6">
             <Typography variant="h2">Profile</Typography>
           </div>
           <div className="flex flex-col gap-5">
             <Card>
               <CardContent className="pt-6 flex flex-col md:flex-row items-center gap-6">
                 <Avatar className="w-24 h-24">
-                  <AvatarImage src={avatarImg} alt="User Avatar" />
-                  {/* --- PERUBAHAN DI SINI --- */}
+                  <AvatarImage
+                    src={user?.profile_picture ?? undefined}
+                    alt="User Avatar"
+                  />
                   <AvatarFallback className="text-4xl">
-                    {user.name?.charAt(0).toUpperCase() || "U"}
+                    {user?.username?.charAt(0)?.toUpperCase() ?? "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center md:text-left">
                   <Typography variant="h3">
-                    {user.name || "Username"}
+                    {user.username || "Username"}
                   </Typography>
                   <Typography variant="muted" className="mt-1">
                     {user.email}
-                  </Typography>
-                  <Typography
-                    variant="small"
-                    className="text-muted-foreground mt-2"
-                  >
-                    Member since{" "}
-                    {new Date(user.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                    })}
                   </Typography>
                 </div>
               </CardContent>
@@ -152,7 +127,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <Typography variant="h3">0</Typography>
+                    <Typography variant="h3">
+                      {loading ? "..." : gamesCreated}
+                    </Typography>
                     <Typography variant="muted">Games Created</Typography>
                   </div>
                 </CardContent>
@@ -163,7 +140,9 @@ export default function ProfilePage() {
                     <img src={iconPlay} alt="Total Plays" className="w-6 h-6" />
                   </div>
                   <div>
-                    <Typography variant="h3">0</Typography>
+                    <Typography variant="h3">
+                      {user.total_game_played}
+                    </Typography>
                     <Typography variant="muted">Total Plays</Typography>
                   </div>
                 </CardContent>
@@ -178,7 +157,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <Typography variant="h3">0</Typography>
+                    <Typography variant="h3">
+                      {user.total_game_liked}
+                    </Typography>
                     <Typography variant="muted">Total Favorites</Typography>
                   </div>
                 </CardContent>

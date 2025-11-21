@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
 
 import logo from "../assets/images/logo.svg";
-import avatarImg from "../assets/images/avatar.png";
+import { useNavigate } from "react-router-dom";
 import iconExplore from "../assets/images/icon-explore.svg";
+import { useAuthStore } from "@/store/useAuthStore";
 import iconMyProjects from "../assets/images/icon-myprojects.svg";
 import thumbnailPlaceholder from "../assets/images/thumbnail-placeholder.png";
 import iconPlus from "../assets/images/icon-plus.svg";
@@ -30,9 +31,12 @@ type Project = {
 };
 
 export default function MyProjectsPage() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -72,10 +76,17 @@ export default function MyProjectsPage() {
         </div>
         <div className="flex items-center gap-3">
           <Avatar className="w-9 h-9">
-            <AvatarImage src={avatarImg} alt="User Avatar" />
-            <AvatarFallback>ZH</AvatarFallback>
+            <AvatarImage
+              src={user?.profile_picture ?? undefined}
+              alt="User Avatar"
+            />
+            <AvatarFallback>
+              {user?.username?.charAt(0)?.toUpperCase() ?? "U"}
+            </AvatarFallback>
           </Avatar>
-          <span className="text-xs font-medium text-slate-900">zzzdn.hadi</span>
+          <span className="text-sm font-medium text-slate-900">
+            {user?.username}
+          </span>
         </div>
       </div>
     </nav>
@@ -110,7 +121,11 @@ export default function MyProjectsPage() {
         Get started by choosing a template and building your first educational
         game.
       </Typography>
-      <Button size="lg" className="w-full max-w-xs">
+      <Button
+        size="lg"
+        className="w-full max-w-xs"
+        onClick={() => navigate("/create-quiz")}
+      >
         <img src={iconPlus} alt="" className="w-5 h-5 mr-2" />
         Create Your First Game
       </Button>
@@ -203,7 +218,7 @@ export default function MyProjectsPage() {
               Manage your educational games
             </Typography>
           </div>
-          <Button>
+          <Button onClick={() => navigate("/create-quiz")}>
             <img src={iconPlus} alt="" className="w-5 h-5 mr-2" />
             New Game
           </Button>

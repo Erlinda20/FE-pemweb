@@ -5,13 +5,17 @@ import { TextareaField } from "@/components/ui/textarea-field";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/ui/form-field";
 import { RadioGroup } from "@/components/ui/radio-group";
+import { useNavigate } from "react-router-dom";
 import { RadioGroupItem } from "@/components/ui/radio-group";
 import { Typography } from "@/components/ui/typography";
 import { ArrowLeft, EyeIcon, Plus, SaveIcon, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import Dropzone from "@/components/ui/dropzone";
 
 function CreateQuiz() {
   const [questions, setQuestions] = useState([1]);
+
+  const navigate = useNavigate();
 
   const addQuestion = () => {
     setQuestions((prev) => [...prev, prev.length + 1]);
@@ -24,7 +28,12 @@ function CreateQuiz() {
   return (
     <div className="w-full bg-slate-50 min-h-screen flex flex-col">
       <div className="bg-white h-fit w-full flex justify-between items-center px-8 py-4">
-        <Button size="sm" variant="ghost" className="hidden md:flex">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="hidden md:flex"
+          onClick={() => navigate("/my-projects")}
+        >
           <ArrowLeft /> Back
         </Button>
         <Button size="sm" variant="ghost" className="block md:hidden">
@@ -40,11 +49,23 @@ function CreateQuiz() {
             </Typography>
           </div>
           <div className="bg-white w-full h-full p-6 space-y-6 rounded-xl border">
-            <FormField label="Game Title" placeholder="Title" type="text" />
+            <FormField
+              required
+              label="Game Title"
+              placeholder="Title"
+              type="text"
+            />
             <TextareaField
               label="Description"
               placeholder="Describe your quiz game"
               rows={4}
+            />
+            <Dropzone
+              required
+              label="Thumbnail Image"
+              allowedTypes={["image/png", "image/jpeg"]}
+              maxSize={2 * 1024 * 1024}
+              onChange={(file) => console.log("Selected:", file)}
             />
           </div>
           <div className="flex justify-between items-center">
@@ -76,13 +97,23 @@ function CreateQuiz() {
               </div>
 
               <TextareaField
+                required
                 label="Question"
                 placeholder="Type your question here"
                 rows={4}
               />
 
+              <Dropzone
+                label="Question Image"
+                allowedTypes={["image/png", "image/jpeg"]}
+                maxSize={2 * 1024 * 1024}
+                onChange={(file) => console.log("Selected:", file)}
+              />
+
               <div className="grid w-full items-center gap-1.5">
-                <Label>Answer Options</Label>
+                <Label className="mb-2 space-x-1">
+                  Answer Options<span className="text-red-500">*</span>
+                </Label>
 
                 <div className="space-x-4 flex">
                   <div className="space-y-3 mt-3">
@@ -113,6 +144,17 @@ function CreateQuiz() {
                 <Label>Shuffle Questions</Label>
                 <Typography variant="small">
                   Randomize questions order for each player
+                </Typography>
+              </div>
+              <div>
+                <Switch />
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <Label>Shuffle Answers</Label>
+                <Typography variant="small">
+                  Randomize answer options for each question
                 </Typography>
               </div>
               <div>
