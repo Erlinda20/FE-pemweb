@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import api from "@/api/axios";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,15 +48,15 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("username", username);
-      formData.append("email", email);
-      formData.append("password", password);
-
-      await api.post("/api/auth/register", formData);
+      await api.post("/api/auth/register", {
+        username,
+        email,
+        password,
+      });
 
       navigate("/login");
     } catch (err) {
+      console.error("Registration error:", err);
       const error = err as AxiosError<{ message: string }>;
       const errorMessage =
         error.response?.data?.message || "Registrasi gagal. Silakan coba lagi.";
@@ -71,11 +70,6 @@ export default function RegisterPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-[#B8D4FF] to-[#FFEEB2] p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="items-center pt-8">
-          <Avatar className="mx-auto size-16">
-            <AvatarImage src="/logo.png" alt="Logo Perusahaan" />
-            <AvatarFallback className="text-3xl">🐱</AvatarFallback>
-          </Avatar>
-
           <Typography variant="h4" className="text-center !font-bold mt-2">
             Welcome!
           </Typography>

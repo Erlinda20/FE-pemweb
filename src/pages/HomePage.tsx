@@ -71,10 +71,18 @@ export default function HomePage() {
   const [orderByName, setOrderByName] = useState<"asc" | "desc" | null>(null);
   const [gameTypeSlug, setGameTypeSlug] = useState<string | null>(null);
 
+  console.log("HomePage: Rendering", {
+    initialLoading,
+    error,
+    gamesCount: games.length,
+  });
+
   useEffect(() => {
     const fetchGameTemplates = async () => {
       try {
+        console.log("HomePage: Fetching templates...");
         const response = await api.get("/api/game/template");
+        console.log("HomePage: Templates fetched", response.data);
         setGameTemplates(response.data.data);
       } catch (err) {
         console.error("Failed to fetch game templates:", err);
@@ -87,6 +95,7 @@ export default function HomePage() {
     const fetchGames = async () => {
       try {
         setError(null);
+        console.log("HomePage: Fetching games...");
 
         const params = new URLSearchParams();
         if (searchQuery) params.append("search", searchQuery);
@@ -122,6 +131,7 @@ export default function HomePage() {
       } finally {
         if (initialLoading) {
           setInitialLoading(false);
+          console.log("HomePage: initialLoading set to false");
         }
       }
     };
